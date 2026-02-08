@@ -712,16 +712,16 @@ MonoBehaviour:
   musicSource: {fileID: 108149762}
   sfxSource: {fileID: 1219299741}
   musicSounds:
-  - name: 
-    clip: {fileID: 0}
-    volume: 0
-    pitch: 0
-    loop: 0
-  - name: 
-    clip: {fileID: 0}
-    volume: 0
-    pitch: 0
-    loop: 0
+  - name: Main Music
+    clip: {fileID: 8300000, guid: c4f5f18fd7c5e534db3a5c4873495082, type: 3}
+    volume: 0.516
+    pitch: 1
+    loop: 1
+  - name: Opening Level Music
+    clip: {fileID: 8300000, guid: 0f864574a9023ce45b3b4a5b9a479426, type: 3}
+    volume: 0.516
+    pitch: 1
+    loop: 1
   sfxSounds:
   - name: 
     clip: {fileID: 0}
@@ -730,9 +730,9 @@ MonoBehaviour:
     loop: 0
   sceneMusicMap:
   - sceneName: Main Menu
-    musicName: 
+    musicName: Main Music
   - sceneName: Level 1
-    musicName: 
+    musicName: Opening Level Music
   defaultMusic: Menu Background Music
   playMusicOnUnknownScenes: 1
 --- !u!4 &716181152
