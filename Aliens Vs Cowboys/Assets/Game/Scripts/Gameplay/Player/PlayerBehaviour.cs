@@ -29,6 +29,8 @@ public class PlayerBehaviour : MonoBehaviour
 
     private void OnAttackPerformed(InputAction.CallbackContext context)
     {
+        if (PauseManager.IsGamePaused) return;
+
         Shoot();
     }
 
