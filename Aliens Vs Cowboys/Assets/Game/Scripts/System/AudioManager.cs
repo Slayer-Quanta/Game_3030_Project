@@ -107,7 +107,8 @@ public class AudioManager : MonoBehaviour
         }
         musicSource.clip = s.clip;
 
-        musicSource.volume = musicSource.volume * s.volume;
+        float masterVolume = GameManager.Instance != null ? GameManager.Instance.currentData.musicVolume : 1f;
+        musicSource.volume = masterVolume * s.volume;
 
         musicSource.pitch = s.pitch;
         musicSource.loop = s.loop;
@@ -124,13 +125,17 @@ public class AudioManager : MonoBehaviour
         }
 
         sfxSource.pitch = s.pitch;
-        sfxSource.PlayOneShot(s.clip, sfxSource.volume * s.volume);
+
+        float masterVolume = GameManager.Instance != null ? GameManager.Instance.currentData.sfxVolume : 1f;
+        sfxSource.PlayOneShot(s.clip, masterVolume * s.volume);
     }
 
     public void PlaySFX(AudioClip clip, float volume = 1f)
     {
         if (clip == null || sfxSource == null) return;
-        sfxSource.PlayOneShot(clip, sfxSource.volume * volume);
+
+        float masterVolume = GameManager.Instance != null ? GameManager.Instance.currentData.sfxVolume : 1f;
+        sfxSource.PlayOneShot(clip, masterVolume * volume);
     }
 
     public void SetMusicVolume(float volume)

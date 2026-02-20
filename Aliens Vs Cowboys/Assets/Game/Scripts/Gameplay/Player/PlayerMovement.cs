@@ -75,7 +75,6 @@ public class PlayerMovement : MonoBehaviour
 
         rb.MovePosition(new Vector2(newPos.x, newPos.y));
 
-        // Rotation logic
         float2 mouseScreenPos = Mouse.current.position.ReadValue();
         float3 mouseWorldPos = (float3)cam.ScreenToWorldPoint(new Vector3(mouseScreenPos.x, mouseScreenPos.y, cam.nearClipPlane));
         float3 lookDir = mouseWorldPos - currentPos;

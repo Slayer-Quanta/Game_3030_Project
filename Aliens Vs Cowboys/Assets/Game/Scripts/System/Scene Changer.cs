@@ -1,16 +1,53 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-public class SceneChanger : MonoBehaviour
+public class SceneTransition : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    [Header("Scene Names")]
+    public string mainMenuScene = "Main Menu";
+    //public string tutorialScene = "Tutorial";
+
+    public string level1Scene = "Level 1";
+
+    //public void LoadTutorial()
+    //{
+    //    if (GameManager.Instance != null)
+    //    {
+    //        GameManager.Instance.StartNewGame(tutorialScene);
+    //    }
+    //    else
+    //    {
+    //        SceneManager.LoadScene(tutorialScene);
+    //    }
+    //}
+
+    public void LoadLevel1()
     {
-        
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.StartNewGame(level1Scene);
+        }
+        else
+        {
+            SceneManager.LoadScene(level1Scene);
+        }
     }
 
-    // Update is called once per frame
-    void Update()
+    public void LoadMainMenu()
     {
-        
+        SceneManager.LoadScene(mainMenuScene);
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
+
+    public void StartSpecificScene(string sceneName)
+    {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.StartNewGame(sceneName);
+        }
     }
 }

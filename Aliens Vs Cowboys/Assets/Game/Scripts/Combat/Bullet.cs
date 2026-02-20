@@ -5,17 +5,29 @@ public class Bullet : MonoBehaviour
     public GameObject hitEffect;
     public float damage = 1f;
 
+    public bool isEnemyBullet = true;
+
     void OnCollisionEnter2D(Collision2D collision)
     {
-        Health targetHealth = collision.gameObject.GetComponent<Health>();
+            if (isEnemyBullet && collision.gameObject.CompareTag("Enemy")) return;
+            if (!isEnemyBullet && collision.gameObject.CompareTag("Player")) return;
 
-        if (targetHealth != null)
-        {
-            targetHealth.TakeDamage(damage);
-        }
+            // Check if we hit an enemy
+            EnemyDeath enemyHealth = collision.gameObject.GetComponent<EnemyDeath>();
+            if (enemyHealth != null)
+            {
+                enemyHealth.TakeDamage(damage);
+            }
 
-        if (hitEffect != null)
-        {
+            // Check if we hit the player
+            PlayerHealth playerHealth = collision.gameObject.GetComponent<PlayerHealth>();
+            if (playerHealth != null)
+            {
+                playerHealth.TakeDamage(damage);
+            }
+
+            if (hitEffect != null)
+            {
             GameObject effect = Instantiate(hitEffect, transform.position, Quaternion.identity);
             Destroy(effect, 5f);
         }

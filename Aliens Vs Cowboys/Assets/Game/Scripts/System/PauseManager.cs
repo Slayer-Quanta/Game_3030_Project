@@ -3,10 +3,11 @@ using UnityEngine.SceneManagement;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using System.Collections;
 
 public class PauseManager : MonoBehaviour
 {
-    [Header("Input Settings")]
+    [Header("Input GameSettings")]
     private InputSystem_Actions inputActions; 
 
     [Header("UI Panels")]
@@ -72,7 +73,8 @@ public class PauseManager : MonoBehaviour
 
         if (pauseMenuUI) pauseMenuUI.SetActive(true);
         if (optionsMenuUI) optionsMenuUI.SetActive(false);
-
+        inputActions.Player.Disable(); 
+        inputActions.UI.Enable();      
         UnlockCursor();
 
         if (EventSystem.current != null && resumeButton != null)
@@ -88,14 +90,30 @@ public class PauseManager : MonoBehaviour
         if (AudioManager.instance != null) AudioManager.instance.SaveVolumeSettings();
 
         IsGamePaused = false;
-        Time.timeScale = 1f;
 
         if (pauseMenuUI) pauseMenuUI.SetActive(false);
         if (optionsMenuUI) optionsMenuUI.SetActive(false);
 
         if (lockCursorOnResume) LockCursor();
+        inputActions.UI.Disable();     
+        inputActions.Player.Enable();
 
         PlaySound();
+
+        StopAllCoroutines();
+        StartCoroutine(SmoothResume(0.5f)); 
+    }
+
+    private IEnumerator SmoothResume(float duration)
+    {
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            Time.timeScale = Mathf.Clamp01(elapsed / duration);
+            yield return null;
+        }
+        Time.timeScale = 1f;
     }
 
     public void OpenOptions()
@@ -120,6 +138,13 @@ public class PauseManager : MonoBehaviour
     public void LoadMainMenu()
     {
         Time.timeScale = 1f;
+
+        inputActions.Player.Disable();
+        inputActions.UI.Enable();
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
         PlaySound();
         SceneManager.LoadScene(mainMenuSceneName);
     }

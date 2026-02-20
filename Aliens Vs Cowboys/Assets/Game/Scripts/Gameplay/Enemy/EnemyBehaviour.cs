@@ -3,12 +3,12 @@ using Unity.Mathematics;
 
 public class EnemyBehaviour : MonoBehaviour
 {
-    [Header("Movement Settings")]
+    [Header("Movement GameSettings")]
     public float moveSpeed = 3f;
     public float stopDistance = 5f;
     public float retreatDistance = 3f;
 
-    [Header("Combat Settings")]
+    [Header("Combat GameSettings")]
     public float shootingRange = 10f;
     public float fireRate = 1.2f;
     private float nextFireTime;
@@ -77,13 +77,17 @@ public class EnemyBehaviour : MonoBehaviour
     {
         if (bulletPrefab != null && firePoint != null)
         {
-            GameObject bullet = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
-            Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
+            GameObject bulletObj = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
 
-            float3 fireUp = (float3)firePoint.up;
-            float3 force = fireUp * bulletForce;
+            // Tell the bullet it belongs to an enemy so they dont kill themselves
+            Bullet bulletScript = bulletObj.GetComponent<Bullet>();
+            if (bulletScript != null)
+            {
+                bulletScript.isEnemyBullet = true;
+            }
 
-            rb.AddForce(new Vector2(force.x, force.y), ForceMode2D.Impulse);
+            Rigidbody2D rb = bulletObj.GetComponent<Rigidbody2D>();
+            rb.linearVelocity = firePoint.up * bulletForce;
         }
     }
 }
