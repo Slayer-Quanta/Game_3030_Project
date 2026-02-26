@@ -7,7 +7,7 @@ using System.Collections;
 
 public class PauseManager : MonoBehaviour
 {
-    [Header("Input GameSettings")]
+    [Header("Input Game Settings")]
     private InputSystem_Actions inputActions; 
 
     [Header("UI Panels")]
@@ -20,7 +20,7 @@ public class PauseManager : MonoBehaviour
     public Button mainMenuButton;
 
     [Header("Configuration")]
-    public string mainMenuSceneName = "MainMenu";
+    public string mainMenuSceneName = "Main Menu";
     public bool lockCursorOnResume = true;
 
     public static bool IsGamePaused { get; private set; } = false;

@@ -5,8 +5,7 @@ using UnityEngine.SceneManagement;
 public class MainMenuController : MonoBehaviour
 {
     [Header("Scene Configuration")]
-    [Tooltip("The name of the level to load for a New Game.")]
-    public string firstLevelName = "GameLevel";
+    public string firstLevelName = "Level 1";
 
     [Header("UI Panels & Prefabs")]
     public GameObject mainMenuContent;
@@ -91,39 +90,22 @@ public class MainMenuController : MonoBehaviour
 
     public void OnNewGameClicked()
     {
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.StartNewGame();
-        }
-
         if (AudioManager.instance != null) AudioManager.instance.PlayButtonClick();
 
-        // Use transitioner if available, otherwise fallback to direct load
-        //if (sceneTransitioner != null)
-        //{
-        //    sceneTransitioner.LoadTutorial();
-        //}
-        //else
-        //{
-        //    SceneManager.LoadScene(firstLevelName);
-        //}
+        if (GameManager.Instance != null)
+            GameManager.Instance.StartNewGame(firstLevelName); 
+        else
+            SceneManager.LoadScene(firstLevelName); 
     }
 
     public void OnContinueClicked()
     {
+        if (AudioManager.instance != null) AudioManager.instance.PlayButtonClick();
+
         if (GameManager.Instance != null)
-        {
             GameManager.Instance.LoadGame();
 
-            if (AudioManager.instance != null) AudioManager.instance.PlayButtonClick();
-
-            // Load the level (Assuming New Game and Continue go to the same starting level, 
-            // or modify to load a saved scene name from currentData)
-            //if (sceneTransitioner != null)
-            //    sceneTransitioner.LoadTutorial();
-            else
-                SceneManager.LoadScene(firstLevelName);
-        }
+        SceneManager.LoadScene(firstLevelName);
     }
 
     public void OnQuitClicked()

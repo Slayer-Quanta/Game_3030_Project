@@ -5,21 +5,11 @@ public class SceneTransition : MonoBehaviour
 {
     [Header("Scene Names")]
     public string mainMenuScene = "Main Menu";
-    //public string tutorialScene = "Tutorial";
+   
 
     public string level1Scene = "Level 1";
 
-    //public void LoadTutorial()
-    //{
-    //    if (GameManager.Instance != null)
-    //    {
-    //        GameManager.Instance.StartNewGame(tutorialScene);
-    //    }
-    //    else
-    //    {
-    //        SceneManager.LoadScene(tutorialScene);
-    //    }
-    //}
+
 
     public void LoadLevel1()
     {

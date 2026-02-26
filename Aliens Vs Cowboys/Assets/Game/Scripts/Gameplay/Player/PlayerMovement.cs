@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Unity.Mathematics;
-using System.Collections; 
+using System.Collections;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -39,7 +39,6 @@ public class PlayerMovement : MonoBehaviour
     private void OnDashPerformed(InputAction.CallbackContext context)
     {
         if (PauseManager.IsGamePaused || isDashing || !canDash) return;
-
         StartCoroutine(Dash());
     }
 
@@ -48,7 +47,9 @@ public class PlayerMovement : MonoBehaviour
         canDash = false;
         isDashing = true;
 
-        Vector2 dashDir = math.length(movementInput) > 0 ? new Vector2(movementInput.x, movementInput.y).normalized : (Vector2)transform.up;
+        Vector2 dashDir = math.length(movementInput) > 0
+            ? new Vector2(movementInput.x, movementInput.y).normalized
+            : (Vector2)transform.up;
 
         rb.linearVelocity = dashDir * dashForce;
 
@@ -71,24 +72,29 @@ public class PlayerMovement : MonoBehaviour
 
         float3 currentPos = new float3(rb.position.x, rb.position.y, 0);
         float3 velocity = new float3(movementInput.x, movementInput.y, 0) * moveSpeed * Time.fixedDeltaTime;
-        float3 newPos = currentPos + velocity;
+        float3 nextPos = currentPos + velocity;
+        rb.MovePosition(new Vector2(nextPos.x, nextPos.y));
 
-        rb.MovePosition(new Vector2(newPos.x, newPos.y));
+        if (cam != null)
+        {
+            Vector2 mouseScreen = _actions.Player.Look.ReadValue<Vector2>();
+            Vector3 worldPos = cam.ScreenToWorldPoint(new Vector3(mouseScreen.x, mouseScreen.y, cam.nearClipPlane));
 
-        float2 mouseScreenPos = Mouse.current.position.ReadValue();
-        float3 mouseWorldPos = (float3)cam.ScreenToWorldPoint(new Vector3(mouseScreenPos.x, mouseScreenPos.y, cam.nearClipPlane));
-        float3 lookDir = mouseWorldPos - currentPos;
-        float angle = math.degrees(math.atan2(lookDir.y, lookDir.x)) - 90f;
-        rb.rotation = angle;
+            Vector2 lookDir = (Vector2)worldPos - rb.position;
+            if (lookDir.sqrMagnitude > 0.001f)
+            {
+                float angle = Mathf.Atan2(lookDir.y, lookDir.x) * Mathf.Rad2Deg - 90f;
+                rb.MoveRotation(angle);
+            }
+        }
     }
 
     void LateUpdate()
     {
-        if (cam != null)
-        {
-            float3 playerPos = (float3)transform.position;
-            float3 camPos = new float3(playerPos.x, playerPos.y, -10f);
-            cam.transform.position = (Vector3)camPos;
-        }
+        if (cam == null) return;
+
+        float3 playerPos = (float3)transform.position;
+        float3 targetCamPos = new float3(playerPos.x, playerPos.y, -10f);
+        cam.transform.position = Vector3.Lerp(cam.transform.position, (Vector3)targetCamPos, 10f * Time.deltaTime);
     }
 }

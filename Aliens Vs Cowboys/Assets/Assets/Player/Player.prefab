@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7603615889973336594}
   - component: {fileID: 3464503466866894805}
   - component: {fileID: 7147269981401535120}
-  - component: {fileID: 3484481505577574374}
+  - component: {fileID: 8259957057712891459}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -39,6 +39,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 89.816}
 --- !u!212 &4501787587822185209
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -84,6 +85,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 10
+  m_MaskInteraction: 0
   m_Sprite: {fileID: -1584782608250813697, guid: 38f24f348d48ff24c97c186625957a5f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -93,7 +95,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!50 &7603615889973336594
 Rigidbody2D:
@@ -137,6 +138,9 @@ MonoBehaviour:
   moveSpeed: 5
   rb: {fileID: 7603615889973336594}
   cam: {fileID: 0}
+  dashForce: 20
+  dashDuration: 0.2
+  dashCooldown: 1
 --- !u!114 &7147269981401535120
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -149,10 +153,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f66eda41116c17488cbbfc48319d57c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerBehaviour
+  currentMode: 0
   firePoint: {fileID: 1657899335367067136}
   bulletPrefab: {fileID: 1141348976843764560, guid: afc65d0b92a623b458cc82512b009d95, type: 3}
   bulletForce: 20
---- !u!114 &3484481505577574374
+  sprayFireRate: 0.1
+  shotgunPelletCount: 5
+  spreadAngle: 15
+--- !u!114 &8259957057712891459
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -161,11 +169,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 4370659533174546491}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7be2b587a49ea654f9c5387d5f7e69d7, type: 3}
+  m_Script: {fileID: 11500000, guid: 978764dd6be71a343a820c0eb97fd949, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Health
-  health: 5
-  isPlayer: 1
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
+  maxHealth: 100
+  OnDeath:
+    m_PersistentCalls:
+      m_Calls: []
+  currentHealth: 0
 --- !u!1 &6678096386234794128
 GameObject:
   m_ObjectHideFlags: 0

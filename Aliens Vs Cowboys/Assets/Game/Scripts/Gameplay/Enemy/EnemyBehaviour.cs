@@ -3,12 +3,12 @@ using Unity.Mathematics;
 
 public class EnemyBehaviour : MonoBehaviour
 {
-    [Header("Movement GameSettings")]
+    [Header("Movement Settings")]
     public float moveSpeed = 3f;
     public float stopDistance = 5f;
     public float retreatDistance = 3f;
 
-    [Header("Combat GameSettings")]
+    [Header("Combat Settings")]
     public float shootingRange = 10f;
     public float fireRate = 1.2f;
     private float nextFireTime;
