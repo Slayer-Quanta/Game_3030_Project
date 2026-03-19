@@ -2,20 +2,23 @@ using UnityEngine;
 
 public class EnemyDeath : MonoBehaviour
 {
-    public float health = 3f;
+    public float maxHealth = 30f;
+    private float currentHealth;
 
-    public void TakeDamage(float amount)
+    void Start()
     {
-        health -= amount;
-
-        if (health <= 0)
-        {
-            Die();
-        }
+        currentHealth = maxHealth;
     }
 
-    void Die()
+    public void TakeDamage(float damage)
     {
-        Destroy(gameObject);
+        currentHealth -= damage;
+
+        if (currentHealth <= 0)
+        {
+            if (AudioManager.instance != null) AudioManager.instance.PlaySFX("EnemyDeath");
+
+            Destroy(gameObject);
+        }
     }
 }

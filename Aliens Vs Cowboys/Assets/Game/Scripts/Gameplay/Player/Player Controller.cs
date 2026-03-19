@@ -1,19 +1,29 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private float speed = 5f;
     [SerializeField] private float rotationSpeed = 720f;
 
-    [Header("Shooting Settings (From Video)")]
+    [Header("Weapon Settings")]
+    public FireMode currentWeapon = FireMode.Single;
     [SerializeField] private GameObject bulletPrefab;
     [SerializeField] private float bulletSpeed = 8f;
+
+    [Header("Fire Rates")]
+    [SerializeField] private float singleFireRate = 0.5f;
+    [SerializeField] private float sprayFireRate = 0.1f;
+    [SerializeField] private float shotgunFireRate = 0.8f;
+
+    [Header("Gun Offsets")]
     [SerializeField] private Transform gunOffset;
-    [SerializeField] private float timeBetweenShots = 0.5f;
+    [SerializeField] private Transform gunOffsetLeft;
+    [SerializeField] private Transform gunOffsetRight;
 
     [Header("Animation")]
-    public Animator animator; 
+    public Animator animator;
 
     private Rigidbody2D rb;
     private Vector2 movementInput;
@@ -25,13 +35,15 @@ public class PlayerController : MonoBehaviour
 
     private PlayerInput playerInput;
     private InputAction fireAction;
+    private InputAction switchAction;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         playerInput = GetComponent<PlayerInput>();
 
-        fireAction = playerInput.actions["Fire"];
+        fireAction = playerInput.actions.FindAction("Fire");
+        switchAction = playerInput.actions.FindAction("Switch");
     }
 
     private void OnMove(InputValue inputValue)
@@ -41,16 +53,22 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        bool isShootingInput = fireAction.IsPressed();
+        if (switchAction != null && switchAction.WasPressedThisFrame())
+        {
+            CycleWeapon();
+        }
+
+        bool isShootingInput = fireAction != null && fireAction.IsPressed();
         bool isMovingInput = movementInput != Vector2.zero;
 
         if (isShootingInput)
         {
             float timeSinceLastFire = Time.time - lastFireTime;
+            float currentFireRate = GetCurrentFireRate();
 
-            if (timeSinceLastFire >= timeBetweenShots)
+            if (timeSinceLastFire >= currentFireRate)
             {
-                FireBullet();
+                FireWeapon();
                 lastFireTime = Time.time;
             }
         }
@@ -86,11 +104,59 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void FireBullet()
+    private void CycleWeapon()
     {
-        GameObject bullet = Instantiate(bulletPrefab, gunOffset.position, transform.rotation);
+        int nextWeaponIndex = ((int)currentWeapon + 1) % System.Enum.GetValues(typeof(FireMode)).Length;
+        currentWeapon = (FireMode)nextWeaponIndex;
+        Debug.Log($"Switched to: {currentWeapon}");
+
+        // Play swap sound!
+        if (AudioManager.instance != null) AudioManager.instance.PlaySFX("Swap");
+    }
+
+    private float GetCurrentFireRate()
+    {
+        switch (currentWeapon)
+        {
+            case FireMode.Spray: return sprayFireRate;
+            case FireMode.Shotgun: return shotgunFireRate;
+            default: return singleFireRate;
+        }
+    }
+
+    private void FireWeapon()
+    {
+        switch (currentWeapon)
+        {
+            case FireMode.Single:
+                SpawnBullet(gunOffset);
+                if (AudioManager.instance != null) AudioManager.instance.PlaySFX("Single");
+                break;
+
+            case FireMode.Spray:
+                SpawnBullet(gunOffset);
+                if (AudioManager.instance != null) AudioManager.instance.PlaySFX("Spray");
+                break;
+
+            case FireMode.Shotgun:
+                SpawnBullet(gunOffset);
+                SpawnBullet(gunOffsetLeft);
+                SpawnBullet(gunOffsetRight);
+                if (AudioManager.instance != null) AudioManager.instance.PlaySFX("Shotgun");
+                break;
+        }
+    }
+
+    private void SpawnBullet(Transform spawnPoint)
+    {
+        if (spawnPoint == null) return;
+
+        GameObject bullet = Instantiate(bulletPrefab, spawnPoint.position, spawnPoint.rotation);
         Rigidbody2D rigidBody = bullet.GetComponent<Rigidbody2D>();
 
-        rigidBody.linearVelocity = bulletSpeed * transform.up;
+        if (rigidBody != null)
+        {
+            rigidBody.linearVelocity = bulletSpeed * spawnPoint.up;
+        }
     }
 }

@@ -747,6 +747,21 @@ MonoBehaviour:
     volume: 0
     pitch: 0
     loop: 0
+  - name: 
+    clip: {fileID: 0}
+    volume: 0
+    pitch: 0
+    loop: 0
+  - name: 
+    clip: {fileID: 0}
+    volume: 0
+    pitch: 0
+    loop: 0
+  - name: 
+    clip: {fileID: 0}
+    volume: 0
+    pitch: 0
+    loop: 0
   sceneMusicMap:
   - sceneName: Main Menu
     musicName: Main Music
