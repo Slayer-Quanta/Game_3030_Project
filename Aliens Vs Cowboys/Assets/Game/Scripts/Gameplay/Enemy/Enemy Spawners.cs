@@ -9,6 +9,7 @@ public class EnemySpawner : MonoBehaviour
     public float spawnInterval = 3f;
     public int maxEnemiesInScene = 10;
 
+
     void Start()
     {
         if (spawnPoints.Length == 0)
