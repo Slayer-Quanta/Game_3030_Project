@@ -1,15 +1,18 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Events;
+using System.Collections; 
 
 public class PlayerHealth : MonoBehaviour
 {
     [Header("Settings")]
     public float maxHealth = 100f;
+    public float returnToMenuDelay = 3f;
+    public string mainMenuSceneName = "Main Menu";
 
     [Header("Events")]
     public UnityEvent OnDeath;
-    public UnityEvent OnDamaged; 
+    public UnityEvent OnDamaged;
     public UnityEvent OnHealthChanged;
 
     [Header("Current State")]
@@ -33,11 +36,12 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
-        // Don't take damage if dead or currently invincible
         if (currentHealth <= 0 || isInvincible) return;
 
         currentHealth -= damage;
         Debug.Log($"Player Health: {currentHealth}");
+
+        // if (AudioManager.instance != null) AudioManager.instance.PlaySFX("PlayerHurt");
 
         if (currentHealth <= 0) currentHealth = 0;
 
@@ -55,7 +59,6 @@ public class PlayerHealth : MonoBehaviour
             OnDamaged?.Invoke();
         }
 
-        // Notify UI that health changed
         OnHealthChanged?.Invoke();
     }
 
@@ -72,25 +75,24 @@ public class PlayerHealth : MonoBehaviour
             GameManager.Instance.currentData.currentHealth = currentHealth;
         }
 
-        // Notify UI that health changed
         OnHealthChanged?.Invoke();
     }
 
     void Die()
     {
+        StartCoroutine(DeathRoutine());
+    }
+
+    private IEnumerator DeathRoutine()
+    {
+        if (AudioManager.instance != null) AudioManager.instance.PlaySFX("PlayerDeath");
+
         OnDeath?.Invoke();
-        Debug.Log("Player Died!");
+        Debug.Log("Player Died! Returning to menu in 3 seconds...");
 
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.RespawnPlayer(this.gameObject);
+        yield return new WaitForSeconds(returnToMenuDelay);
 
-            currentHealth = GameManager.Instance.currentData.currentHealth;
-        }
-        else
-        {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        }
+        SceneManager.LoadScene(mainMenuSceneName);
     }
 
     public void ResetHealth()
@@ -102,7 +104,6 @@ public class PlayerHealth : MonoBehaviour
             GameManager.Instance.currentData.currentHealth = currentHealth;
         }
 
-        // Update UI when resetting health
         OnHealthChanged?.Invoke();
     }
 }

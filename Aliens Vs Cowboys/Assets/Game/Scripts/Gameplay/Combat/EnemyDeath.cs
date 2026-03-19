@@ -16,7 +16,7 @@ public class EnemyDeath : MonoBehaviour
 
         if (currentHealth <= 0)
         {
-            if (AudioManager.instance != null) AudioManager.instance.PlaySFX("EnemyDeath");
+            if (AudioManager.instance != null) AudioManager.instance.PlaySFX("Enemy Death");
 
             Destroy(gameObject);
         }

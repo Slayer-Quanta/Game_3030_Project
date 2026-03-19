@@ -473,7 +473,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2714160688000bd418129ea91cba4933, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MainMenuManager
-  firstLevelName: Level 1
+  firstLevelName: Prototype Test Level
   mainMenuContent: {fileID: 2015479670}
   optionsPrefab: {fileID: 1968243114066662376, guid: 39f07369981424e4c9ba6af81b6968f6, type: 3}
   sceneTransitioner: {fileID: 2015479675}
@@ -742,30 +742,40 @@ MonoBehaviour:
     pitch: 1
     loop: 1
   sfxSounds:
-  - name: 
-    clip: {fileID: 0}
-    volume: 0
-    pitch: 0
+  - name: Single
+    clip: {fileID: 8300000, guid: 158bb62619353d443bdb566147d664ac, type: 3}
+    volume: 0.569
+    pitch: 1
     loop: 0
-  - name: 
-    clip: {fileID: 0}
-    volume: 0
-    pitch: 0
+  - name: Shotgun
+    clip: {fileID: 8300000, guid: 06ae9bc0764ed2d429fb682bd90709c8, type: 3}
+    volume: 0.5
+    pitch: 1
     loop: 0
-  - name: 
-    clip: {fileID: 0}
-    volume: 0
-    pitch: 0
+  - name: Spray
+    clip: {fileID: 8300000, guid: 158bb62619353d443bdb566147d664ac, type: 3}
+    volume: 0.5
+    pitch: 1
     loop: 0
-  - name: 
-    clip: {fileID: 0}
-    volume: 0
-    pitch: 0
+  - name: Swap
+    clip: {fileID: 8300000, guid: e670581bea6285b489b86c744a092e47, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+  - name: Player Death
+    clip: {fileID: 8300000, guid: 75ec2cdb97e24bb46b331995c5597296, type: 3}
+    volume: 0.5
+    pitch: 1
+    loop: 0
+  - name: Enemy Death
+    clip: {fileID: 8300000, guid: e7841963fcfd94d4d8106c838fe939f6, type: 3}
+    volume: 0.323
+    pitch: 1
     loop: 0
   sceneMusicMap:
   - sceneName: Main Menu
     musicName: Main Music
-  - sceneName: Level 1
+  - sceneName: Prototype Test Level
     musicName: Opening Level Music
   defaultMusic: Menu Background Music
   playMusicOnUnknownScenes: 1
@@ -1561,7 +1571,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneTransition
   mainMenuScene: Main Menu
-  level1Scene: Level 1
+  level1Scene: Prototype Test Level
 --- !u!1 &2123213506
 GameObject:
   m_ObjectHideFlags: 0

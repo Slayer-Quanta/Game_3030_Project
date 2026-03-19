@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private float speed = 5f;
@@ -25,6 +24,9 @@ public class PlayerController : MonoBehaviour
     [Header("Animation")]
     public Animator animator;
 
+    [Header("Camera")]
+    public Camera mainCamera;
+
     private Rigidbody2D rb;
     private Vector2 movementInput;
 
@@ -41,6 +43,11 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         playerInput = GetComponent<PlayerInput>();
+
+        if (mainCamera == null)
+        {
+            mainCamera = Camera.main;
+        }
 
         fireAction = playerInput.actions.FindAction("Fire");
         switchAction = playerInput.actions.FindAction("Switch");
@@ -94,6 +101,15 @@ public class PlayerController : MonoBehaviour
         RotateInDirectionOfInput();
     }
 
+    void LateUpdate()
+    {
+        if (mainCamera != null)
+        {
+            Vector3 targetCamPos = new Vector3(transform.position.x, transform.position.y, -10f);
+            mainCamera.transform.position = Vector3.Lerp(mainCamera.transform.position, targetCamPos, 10f * Time.deltaTime);
+        }
+    }
+
     private void RotateInDirectionOfInput()
     {
         if (movementInput != Vector2.zero)
@@ -108,9 +124,7 @@ public class PlayerController : MonoBehaviour
     {
         int nextWeaponIndex = ((int)currentWeapon + 1) % System.Enum.GetValues(typeof(FireMode)).Length;
         currentWeapon = (FireMode)nextWeaponIndex;
-        Debug.Log($"Switched to: {currentWeapon}");
 
-        // Play swap sound!
         if (AudioManager.instance != null) AudioManager.instance.PlaySFX("Swap");
     }
 

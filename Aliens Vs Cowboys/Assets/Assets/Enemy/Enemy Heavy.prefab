@@ -117,7 +117,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 10
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 3262339659241895798, guid: b845db7ee0f444944a6a1fc720f3db72, type: 3}
+  m_Sprite: {fileID: 3964407508561363270, guid: 207a9de3681454c4da63e0dcc07f187a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -188,17 +188,17 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0.022267282, y: 0.0052860975}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 3, y: 4.2}
+    oldSize: {x: 0.875, y: 1}
     newSize: {x: 3, y: 4.2}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 3, y: 4.2}
+  m_Size: {x: 0.9736675, y: 1.0390072}
   m_EdgeRadius: 0
 --- !u!114 &5845338929648399565
 MonoBehaviour:
@@ -234,4 +234,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7be2b587a49ea654f9c5387d5f7e69d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
-  health: 3
+  maxHealth: 30
