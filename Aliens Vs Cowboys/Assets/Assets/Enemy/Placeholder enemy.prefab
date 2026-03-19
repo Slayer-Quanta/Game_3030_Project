@@ -70,6 +70,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &7711792401588304291
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -115,6 +116,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 10
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 3262339659241895798, guid: b845db7ee0f444944a6a1fc720f3db72, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -124,7 +126,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!50 &3767485855240134783
 Rigidbody2D:
@@ -212,13 +213,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBehaviour
   moveSpeed: 3
+  rotationSpeed: 200
+  awarenessDistance: 8
   stopDistance: 5
   retreatDistance: 3
   shootingRange: 10
   fireRate: 1.2
   firePoint: {fileID: 4317445970586926992}
-  bulletPrefab: {fileID: 1141348976843764560, guid: afc65d0b92a623b458cc82512b009d95, type: 3}
-  bulletForce: 12
+  bulletPrefab: {fileID: 4298206948439640049, guid: afc65d0b92a623b458cc82512b009d95, type: 3}
+  bulletForce: 5
 --- !u!114 &1718858423343914616
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -232,4 +235,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
   health: 3
-  isPlayer: 0

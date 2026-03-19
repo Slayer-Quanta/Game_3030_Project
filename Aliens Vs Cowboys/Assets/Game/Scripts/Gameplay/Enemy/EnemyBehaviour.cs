@@ -1,10 +1,14 @@
 using UnityEngine;
-using Unity.Mathematics;
 
+[RequireComponent(typeof(Rigidbody2D))]
 public class EnemyBehaviour : MonoBehaviour
 {
-    [Header("Movement Settings")]
+    [Header("Movement & AI Settings")]
     public float moveSpeed = 3f;
+    public float rotationSpeed = 200f;
+    public float awarenessDistance = 8f; 
+
+    [Header("Combat Spacing Settings")]
     public float stopDistance = 5f;
     public float retreatDistance = 3f;
 
@@ -17,42 +21,28 @@ public class EnemyBehaviour : MonoBehaviour
     public GameObject bulletPrefab;
     public float bulletForce = 12f;
 
+    private Rigidbody2D rb;
     private Transform player;
 
-    void Start()
+    private Vector2 targetDirection;
+    private float directionChangeCooldown;
+    private bool isStopped = false; 
+
+    void Awake()
     {
+        rb = GetComponent<Rigidbody2D>();
+
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null) player = playerObj.transform;
+
+        targetDirection = transform.up;
     }
 
     void Update()
     {
         if (player == null) return;
 
-        float3 myPos = transform.position;
-        float3 playerPos = player.position;
-
-        float distanceToPlayer = math.distance(myPos, playerPos);
-        float3 targetPos = myPos; 
-
-        if (distanceToPlayer > stopDistance)
-        {
-            targetPos = MoveTowards(myPos, playerPos, moveSpeed * Time.deltaTime);
-        }
-        else if (distanceToPlayer < retreatDistance)
-        {
-            float3 dirAway = math.normalize(myPos - playerPos);
-            float3 retreatPos = myPos + dirAway;
-            targetPos = MoveTowards(myPos, retreatPos, moveSpeed * Time.deltaTime);
-        }
-
-        transform.position = (Vector3)targetPos;
-
-        float3 lookDir = playerPos - myPos;
-        float angle = math.degrees(math.atan2(lookDir.y, lookDir.x)) - 90f;
-
-        transform.rotation = quaternion.Euler(0, 0, math.radians(angle));
-
+        float distanceToPlayer = Vector2.Distance(transform.position, player.position);
         if (distanceToPlayer < shootingRange && Time.time > nextFireTime)
         {
             ShootAtPlayer();
@@ -60,17 +50,86 @@ public class EnemyBehaviour : MonoBehaviour
         }
     }
 
-    float3 MoveTowards(float3 current, float3 target, float maxDistDelta)
+    void FixedUpdate()
     {
-        float3 dir = target - current;
-        float dist = math.length(dir);
+        UpdateTargetDirection();
+        RotateTowardsTarget();
+        SetVelocity();
+    }
 
-        if (dist <= maxDistDelta || dist == 0f)
+    private void UpdateTargetDirection()
+    {
+        HandleRandomDirectionChange();
+
+        HandlePlayerTargeting();
+    }
+
+    private void HandleRandomDirectionChange()
+    {
+        directionChangeCooldown -= Time.deltaTime;
+
+        if (directionChangeCooldown <= 0f)
         {
-            return target;
-        }
+            float randomAngle = Random.Range(-90f, 90f);
 
-        return current + (dir / dist) * maxDistDelta;
+            Quaternion rotation = Quaternion.AngleAxis(randomAngle, transform.forward);
+            targetDirection = rotation * targetDirection;
+
+            directionChangeCooldown = Random.Range(1f, 5f);
+        }
+    }
+
+    private void HandlePlayerTargeting()
+    {
+        if (player == null) return;
+
+        float distance = Vector2.Distance(transform.position, player.position);
+
+        if (distance <= awarenessDistance)
+        {
+            if (distance > stopDistance)
+            {
+                targetDirection = (player.position - transform.position).normalized;
+                isStopped = false;
+            }
+            else if (distance < retreatDistance)
+            {
+                targetDirection = (transform.position - player.position).normalized;
+                isStopped = false;
+            }
+            else
+            {
+                targetDirection = (player.position - transform.position).normalized;
+                isStopped = true;
+            }
+        }
+        else
+        {
+            isStopped = false;
+        }
+    }
+
+    private void RotateTowardsTarget()
+    {
+        if (targetDirection == Vector2.zero) return;
+
+        Quaternion targetRotation = Quaternion.LookRotation(transform.forward, targetDirection);
+
+        Quaternion rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+
+        rb.MoveRotation(rotation);
+    }
+
+    private void SetVelocity()
+    {
+        if (isStopped)
+        {
+            rb.linearVelocity = Vector2.zero;
+        }
+        else
+        {
+            rb.linearVelocity = transform.up * moveSpeed;
+        }
     }
 
     void ShootAtPlayer()
@@ -79,15 +138,17 @@ public class EnemyBehaviour : MonoBehaviour
         {
             GameObject bulletObj = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
 
-            // Tell the bullet it belongs to an enemy so they dont kill themselves
             Bullet bulletScript = bulletObj.GetComponent<Bullet>();
             if (bulletScript != null)
             {
                 bulletScript.isEnemyBullet = true;
             }
 
-            Rigidbody2D rb = bulletObj.GetComponent<Rigidbody2D>();
-            rb.linearVelocity = firePoint.up * bulletForce;
+            Rigidbody2D projRb = bulletObj.GetComponent<Rigidbody2D>();
+            if (projRb != null)
+            {
+                projRb.linearVelocity = firePoint.up * bulletForce;
+            }
         }
     }
 }
