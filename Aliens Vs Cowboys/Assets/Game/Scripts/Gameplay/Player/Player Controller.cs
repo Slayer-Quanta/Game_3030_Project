@@ -1,10 +1,17 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+[RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(PlayerInput))]
 public class PlayerController : MonoBehaviour
 {
+    [Header("Movement Settings")]
     [SerializeField] private float speed = 5f;
-    [SerializeField] private float rotationSpeed = 720f;
+    [SerializeField] private float movementSmoothing = 0.05f;
+
+    [Header("Looking/Facing Settings")]
+    [Tooltip("Offset (in degrees) if your sprite faces backwards/sideways. Default 'Right' is 0.")]
+    public float spriteRotationOffset = 0f;
 
     [Header("Weapon Settings")]
     public FireMode currentWeapon = FireMode.Single;
@@ -12,120 +19,151 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float bulletSpeed = 8f;
 
     [Header("Fire Rates")]
-    [SerializeField] private float singleFireRate = 0.5f;
+    [SerializeField] private float singleFireRate = 0.3f;
     [SerializeField] private float sprayFireRate = 0.1f;
-    [SerializeField] private float shotgunFireRate = 0.8f;
+    [SerializeField] private float shotgunFireRate = 0.6f;
 
-    [Header("Gun Offsets")]
+    [Header("Spawn Points")]
     [SerializeField] private Transform gunOffset;
     [SerializeField] private Transform gunOffsetLeft;
     [SerializeField] private Transform gunOffsetRight;
 
-    [Header("Animation")]
+    [Header("Required Components")]
     public Animator animator;
-
-    [Header("Camera")]
     public Camera mainCamera;
 
     private Rigidbody2D rb;
-    private Vector2 movementInput;
+    private PlayerInput playerInput;
+    private InputAction moveAction;
+    private InputAction lookAction;
+    private InputAction fireAction;
+    private InputAction switchAction;
 
+    private Vector2 rawMovementInput;
     private Vector2 smoothMovementInput;
     private Vector2 movementInputSmoothVelocity;
 
+    private float targetAngle;
     private float lastFireTime;
 
-    private PlayerInput playerInput;
-    private InputAction fireAction;
-    private InputAction switchAction;
+    public enum FireMode { Single, Spray, Shotgun }
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         playerInput = GetComponent<PlayerInput>();
 
-        if (mainCamera == null)
-        {
-            mainCamera = Camera.main;
-        }
+        rb.gravityScale = 0f;
+        rb.angularDamping = 0f;
 
+        if (mainCamera == null) mainCamera = Camera.main;
+
+        moveAction = playerInput.actions.FindAction("Move");
+        lookAction = playerInput.actions.FindAction("Look");
         fireAction = playerInput.actions.FindAction("Fire");
         switchAction = playerInput.actions.FindAction("Switch");
     }
 
-    private void OnMove(InputValue inputValue)
-    {
-        movementInput = inputValue.Get<Vector2>();
-    }
-
     void Update()
     {
-        if (switchAction != null && switchAction.WasPressedThisFrame())
+        HandleInput();
+        HandleShooting();
+        UpdateAnimations();
+    }
+
+    void FixedUpdate()
+    {
+        ApplyMovementAndRotation();
+    }
+
+    private void HandleInput()
+    {
+        // 1. Read Movement
+        if (moveAction != null)
         {
-            CycleWeapon();
+            rawMovementInput = moveAction.ReadValue<Vector2>();
         }
 
+        // 2. Read Aiming (Safely separated by Control Scheme!)
+        if (mainCamera != null && playerInput != null)
+        {
+            string currentScheme = playerInput.currentControlScheme;
+
+            // If we are using a Controller, ONLY read the stick
+            if (currentScheme == "Gamepad" || currentScheme == "Joystick")
+            {
+                if (lookAction != null)
+                {
+                    Vector2 stickInput = lookAction.ReadValue<Vector2>();
+
+                    // Only update the angle if they are actually pushing the stick
+                    if (stickInput.sqrMagnitude > 0.01f)
+                    {
+                        CalculateGamepadRotation(stickInput);
+                    }
+                }
+            }
+            // If we are using Keyboard/Mouse, ONLY read the hardware mouse
+            else
+            {
+                if (Mouse.current != null)
+                {
+                    CalculateMouseRotation(Mouse.current.position.ReadValue());
+                }
+            }
+        }
+
+        // 3. Cycle Weapon
+        if (switchAction != null && switchAction.WasPressedThisFrame()) CycleWeapon();
+    }
+
+    private void CalculateGamepadRotation(Vector2 stickInput)
+    {
+        targetAngle = Mathf.Atan2(stickInput.y, stickInput.x) * Mathf.Rad2Deg;
+    }
+
+    private void CalculateMouseRotation(Vector2 mouseScreenPos)
+    {
+        Vector3 mouseWorldPos = mainCamera.ScreenToWorldPoint(new Vector3(mouseScreenPos.x, mouseScreenPos.y, 0f));
+        Vector2 aimDir = (Vector2)(mouseWorldPos - transform.position);
+
+        if (aimDir.sqrMagnitude > 0.01f)
+        {
+            targetAngle = Mathf.Atan2(aimDir.y, aimDir.x) * Mathf.Rad2Deg;
+        }
+    }
+
+    private void HandleShooting()
+    {
         bool isShootingInput = fireAction != null && fireAction.IsPressed();
-        bool isMovingInput = movementInput != Vector2.zero;
 
         if (isShootingInput)
         {
             float timeSinceLastFire = Time.time - lastFireTime;
-            float currentFireRate = GetCurrentFireRate();
-
-            if (timeSinceLastFire >= currentFireRate)
+            if (timeSinceLastFire >= GetCurrentFireRate())
             {
                 FireWeapon();
                 lastFireTime = Time.time;
             }
         }
+    }
 
-        if (animator != null)
+    private void FireWeapon()
+    {
+        switch (currentWeapon)
         {
-            animator.SetBool("isWalking", isMovingInput);
-            animator.SetBool("isIdle", !isMovingInput && !isShootingInput);
-            animator.SetBool("isShooting", isShootingInput);
+            case FireMode.Single:
+                SpawnBullet(gunOffset);
+                break;
+            case FireMode.Spray:
+                SpawnBullet(gunOffset);
+                break;
+            case FireMode.Shotgun:
+                SpawnBullet(gunOffset);
+                SpawnBullet(gunOffsetLeft);
+                SpawnBullet(gunOffsetRight);
+                break;
         }
-    }
-
-    void FixedUpdate()
-    {
-        smoothMovementInput = Vector2.SmoothDamp(
-            smoothMovementInput,
-            movementInput,
-            ref movementInputSmoothVelocity,
-            0.1f);
-
-        rb.linearVelocity = smoothMovementInput * speed;
-
-        RotateInDirectionOfInput();
-    }
-
-    void LateUpdate()
-    {
-        if (mainCamera != null)
-        {
-            Vector3 targetCamPos = new Vector3(transform.position.x, transform.position.y, -10f);
-            mainCamera.transform.position = Vector3.Lerp(mainCamera.transform.position, targetCamPos, 10f * Time.deltaTime);
-        }
-    }
-
-    private void RotateInDirectionOfInput()
-    {
-        if (movementInput != Vector2.zero)
-        {
-            Quaternion targetRotation = Quaternion.LookRotation(transform.forward, smoothMovementInput);
-            Quaternion rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
-            rb.MoveRotation(rotation);
-        }
-    }
-
-    private void CycleWeapon()
-    {
-        int nextWeaponIndex = ((int)currentWeapon + 1) % System.Enum.GetValues(typeof(FireMode)).Length;
-        currentWeapon = (FireMode)nextWeaponIndex;
-
-        if (AudioManager.instance != null) AudioManager.instance.PlaySFX("Swap");
     }
 
     private float GetCurrentFireRate()
@@ -138,39 +176,55 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void FireWeapon()
+    private void SpawnBullet(Transform spawnPoint)
     {
-        switch (currentWeapon)
+        if (spawnPoint == null || bulletPrefab == null) return;
+        GameObject bullet = Instantiate(bulletPrefab, spawnPoint.position, spawnPoint.rotation);
+        Rigidbody2D bulletRb = bullet.GetComponent<Rigidbody2D>();
+        if (bulletRb != null) bulletRb.linearVelocity = spawnPoint.up * bulletSpeed;
+    }
+
+    private void CycleWeapon()
+    {
+        int totalWeapons = System.Enum.GetValues(typeof(FireMode)).Length;
+        int nextWeaponIndex = ((int)currentWeapon + 1) % totalWeapons;
+        currentWeapon = (FireMode)nextWeaponIndex;
+    }
+
+    private void ApplyMovementAndRotation()
+    {
+        // Smoothly apply velocity instead of MovePosition to prevent physics jittering
+        smoothMovementInput = Vector2.SmoothDamp(
+            smoothMovementInput,
+            rawMovementInput,
+            ref movementInputSmoothVelocity,
+            movementSmoothing);
+
+        rb.linearVelocity = smoothMovementInput * speed;
+
+        // Apply our isolated aiming angle
+        rb.MoveRotation(targetAngle + spriteRotationOffset);
+    }
+
+    private void UpdateAnimations()
+    {
+        if (animator != null)
         {
-            case FireMode.Single:
-                SpawnBullet(gunOffset);
-                if (AudioManager.instance != null) AudioManager.instance.PlaySFX("Single");
-                break;
+            bool isMovingInput = rawMovementInput.sqrMagnitude > 0.01f;
+            bool isShootingInput = fireAction != null && fireAction.IsPressed();
 
-            case FireMode.Spray:
-                SpawnBullet(gunOffset);
-                if (AudioManager.instance != null) AudioManager.instance.PlaySFX("Spray");
-                break;
-
-            case FireMode.Shotgun:
-                SpawnBullet(gunOffset);
-                SpawnBullet(gunOffsetLeft);
-                SpawnBullet(gunOffsetRight);
-                if (AudioManager.instance != null) AudioManager.instance.PlaySFX("Shotgun");
-                break;
+            animator.SetBool("isWalking", isMovingInput);
+            animator.SetBool("isIdle", !isMovingInput && !isShootingInput);
+            animator.SetBool("isShooting", isShootingInput);
         }
     }
 
-    private void SpawnBullet(Transform spawnPoint)
+    void LateUpdate()
     {
-        if (spawnPoint == null) return;
-
-        GameObject bullet = Instantiate(bulletPrefab, spawnPoint.position, spawnPoint.rotation);
-        Rigidbody2D rigidBody = bullet.GetComponent<Rigidbody2D>();
-
-        if (rigidBody != null)
+        if (mainCamera != null)
         {
-            rigidBody.linearVelocity = bulletSpeed * spawnPoint.up;
+            Vector3 targetCamPos = new Vector3(transform.position.x, transform.position.y, -10f);
+            mainCamera.transform.position = Vector3.Lerp(mainCamera.transform.position, targetCamPos, 8f * Time.deltaTime);
         }
     }
 }

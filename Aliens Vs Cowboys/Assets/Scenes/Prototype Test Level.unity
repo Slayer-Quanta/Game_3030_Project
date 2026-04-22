@@ -183,7 +183,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_MaskInteraction: 0
   m_Sprite: {fileID: -4533554359200444325, guid: ae5453ddca1081b4bbe873b6b9fc6ab8, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -523,6 +523,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
+  m_UseReflectionProbes: 0
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
@@ -1141,7 +1142,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   speed: 5
-  rotationSpeed: 720
+  movementSmoothing: 0.05
+  spriteRotationOffset: -90
   currentWeapon: 0
   bulletPrefab: {fileID: 4298206948439640049, guid: afc65d0b92a623b458cc82512b009d95, type: 3}
   bulletSpeed: 8
