@@ -35,7 +35,7 @@ public class OptionsMenu : MonoBehaviour
     {
         if (settings == null)
         {
-            Debug.LogError("GameSettings missing from OptionsMenu!", this);
+            Debug.LogError("GameSettings missing from OptionsMenu", this);
             return;
         }
 

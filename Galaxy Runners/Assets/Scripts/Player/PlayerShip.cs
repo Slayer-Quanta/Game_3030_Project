@@ -12,9 +12,12 @@ public struct Border
 [RequireComponent(typeof(PlayerInput))]
 public class PlayerShip : MonoBehaviour
 {
+    [Header("Scene Management")]
+    [SerializeField] private string mainMenuSceneName = "Main Menu";
+
     [Header("Movement & Bounds")]
     [SerializeField] private float speed = 10f;
-    [SerializeField] private float rotationSpeed = 250f; 
+    [SerializeField] private float rotationSpeed = 250f;
     [SerializeField] private Border horizontalBounds;
     [SerializeField] private Border verticalBounds;
 
@@ -42,7 +45,6 @@ public class PlayerShip : MonoBehaviour
     private void Start()
     {
         _targetAngle = transform.eulerAngles.z;
-
         StartCoroutine(ScoreIncrementCoroutine());
     }
 
@@ -63,9 +65,11 @@ public class PlayerShip : MonoBehaviour
     private void HandleInputs()
     {
         _moveInput = _playerInput.actions["Move"].ReadValue<Vector2>();
+
         float turnLeft = _playerInput.actions["Rotate Left"].ReadValue<float>();
         float turnRight = _playerInput.actions["Rotate Right"].ReadValue<float>();
         float turnAmount = turnLeft - turnRight;
+
         _targetAngle += turnAmount * rotationSpeed * Time.deltaTime;
         transform.rotation = Quaternion.Euler(0, 0, _targetAngle);
     }
@@ -103,12 +107,14 @@ public class PlayerShip : MonoBehaviour
         if (_hitCount == 1)
         {
             _spriteRenderer.color = Color.red;
+
+            if (AudioManager.instance != null) AudioManager.instance.PlaySFX("PlayerHurt");
         }
         else if (_hitCount >= 2)
         {
             if (AudioManager.instance != null) AudioManager.instance.PlaySFX("PlayerDeath");
 
-            if (GameManager.Instance != null && ScoreManager.instance != null)
+            if (GameManager.Instance != null && ScoreManager.instance != null && ScoreManager.instance.scoreText != null)
             {
                 string scoreString = ScoreManager.instance.scoreText.text.Replace("Score: ", "");
                 if (int.TryParse(scoreString, out int finalScore))
@@ -117,8 +123,16 @@ public class PlayerShip : MonoBehaviour
                 }
             }
 
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+
+            if (Camera.main != null && Camera.main.transform.parent == transform)
+            {
+                Camera.main.transform.SetParent(null);
+            }
+
             Destroy(gameObject);
-            SceneManager.LoadScene("Main Menu");
+            SceneManager.LoadScene(mainMenuSceneName);
         }
     }
 

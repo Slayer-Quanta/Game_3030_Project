@@ -53,7 +53,7 @@ public class EnemyController : MonoBehaviour
 
         spriteRenderer.color = Color.red;
 
-        if (ScoreManager.instance != null) ScoreManager.instance.AddScore(50);
+        if (ScoreManager.instance != null) ScoreManager.instance.AddScore(5);
         if (AudioManager.instance != null) AudioManager.instance.PlaySFX("EnemyDeath");
 
         yield return new WaitForSeconds(0.2f);

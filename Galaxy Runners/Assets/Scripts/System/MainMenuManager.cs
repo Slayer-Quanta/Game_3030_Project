@@ -66,7 +66,7 @@ public class MainMenuController : MonoBehaviour
     {
         if (optionsPrefab == null)
         {
-            Debug.LogError("Options Prefab is missing from MainMenuController!");
+            Debug.LogError("Options Prefab is missing from MainMenuController");
             return;
         }
 

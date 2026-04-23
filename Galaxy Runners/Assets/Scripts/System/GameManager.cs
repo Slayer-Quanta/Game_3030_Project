@@ -35,9 +35,8 @@ public class GameManager : MonoBehaviour
 
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (scene.name == "MainMenu") return;
+        if (scene.name == "MainMenu" || scene.name == "Main Menu") return;
 
-        // Find the ship and place it at the starting position
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
         {
@@ -47,13 +46,11 @@ public class GameManager : MonoBehaviour
 
     public void StartNewGame(string sceneToLoad = "")
     {
-        // Keep existing volume and high score, but reset spawn position for the new run
         if (currentData == null)
         {
             currentData = new PlayerData();
         }
 
-        // Set the default spawn location for the ship 
         currentData.spawnPosition = new Vector3(0, -3.5f, 0);
 
         SaveGame();
@@ -86,7 +83,6 @@ public class GameManager : MonoBehaviour
             StartNewGame();
         }
     }
-
 
     public void CheckAndSaveHighScore(int currentScore)
     {
