@@ -53,7 +53,6 @@ public class PlayerShip : MonoBehaviour
         HandleInputs();
         ApplyMovementAndWrapping();
 
-        // Shooting Logic
         if (_playerInput.actions["Fire"].IsPressed() && Time.time > _nextFireTime)
         {
             Fire();
@@ -64,13 +63,10 @@ public class PlayerShip : MonoBehaviour
     private void HandleInputs()
     {
         _moveInput = _playerInput.actions["Move"].ReadValue<Vector2>();
-
         float turnLeft = _playerInput.actions["Rotate Left"].ReadValue<float>();
         float turnRight = _playerInput.actions["Rotate Right"].ReadValue<float>();
         float turnAmount = turnLeft - turnRight;
-
         _targetAngle += turnAmount * rotationSpeed * Time.deltaTime;
-
         transform.rotation = Quaternion.Euler(0, 0, _targetAngle);
     }
 
@@ -101,33 +97,36 @@ public class PlayerShip : MonoBehaviour
         }
     }
 
+    public void TakeDamage(float damageAmount = 1f)
+    {
+        _hitCount++;
+        if (_hitCount == 1)
+        {
+            _spriteRenderer.color = Color.red;
+        }
+        else if (_hitCount >= 2)
+        {
+            if (AudioManager.instance != null) AudioManager.instance.PlaySFX("PlayerDeath");
+
+            if (GameManager.Instance != null && ScoreManager.instance != null)
+            {
+                string scoreString = ScoreManager.instance.scoreText.text.Replace("Score: ", "");
+                if (int.TryParse(scoreString, out int finalScore))
+                {
+                    GameManager.Instance.CheckAndSaveHighScore(finalScore);
+                }
+            }
+
+            Destroy(gameObject);
+            SceneManager.LoadScene("Main Menu");
+        }
+    }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Enemy"))
         {
-            _hitCount++;
-            if (_hitCount == 1)
-            {
-                _spriteRenderer.color = Color.red;
-
-                if (AudioManager.instance != null) AudioManager.instance.PlaySFX("PlayerHurt");
-            }
-            else if (_hitCount >= 2)
-            {
-                if (AudioManager.instance != null) AudioManager.instance.PlaySFX("PlayerDeath");
-
-                if (GameManager.Instance != null && ScoreManager.instance != null)
-                {
-                    string scoreString = ScoreManager.instance.scoreText.text.Replace("Score: ", "");
-                    if (int.TryParse(scoreString, out int finalScore))
-                    {
-                        GameManager.Instance.CheckAndSaveHighScore(finalScore);
-                    }
-                }
-
-                Destroy(gameObject);
-                SceneManager.LoadScene("MainMenu");
-            }
+            TakeDamage();
         }
     }
 

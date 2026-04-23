@@ -1051,9 +1051,38 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AudioManager
   musicSource: {fileID: 771314514}
   sfxSource: {fileID: 1790755963}
-  musicSounds: []
-  sfxSounds: []
-  sceneMusicMap: []
+  musicSounds:
+  - name: Level 1 Music
+    clip: {fileID: 8300000, guid: eac44896a0a2a4a46b56011582e3d5f4, type: 3}
+    volume: 0.302
+    pitch: 1
+    loop: 1
+  - name: Main Menu Music
+    clip: {fileID: 8300000, guid: 74656bc12db7a1141b4686a5aa0e0c9c, type: 3}
+    volume: 0.302
+    pitch: 1
+    loop: 1
+  sfxSounds:
+  - name: Shoot
+    clip: {fileID: 8300000, guid: 6c09297f947e3f34c8d0d22f820d9a8d, type: 3}
+    volume: 0.3
+    pitch: 1
+    loop: 0
+  - name: PlayerDeath
+    clip: {fileID: 8300000, guid: 72490cf63753a374ba2c252c4b4a8be5, type: 3}
+    volume: 0.3
+    pitch: 1
+    loop: 0
+  - name: EnemyDeath
+    clip: {fileID: 8300000, guid: 72490cf63753a374ba2c252c4b4a8be5, type: 3}
+    volume: 0.3
+    pitch: 1
+    loop: 0
+  sceneMusicMap:
+  - sceneName: Level 1
+    musicName: Level 1 Music
+  - sceneName: Main Menu
+    musicName: Main Menu Music
   defaultMusic: Menu Background Music
   playMusicOnUnknownScenes: 1
 --- !u!4 &995442902
