@@ -1,0 +1,146 @@
+using System.Collections;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
+
+[System.Serializable]
+public struct Border
+{
+    public float Min, Max;
+}
+
+[RequireComponent(typeof(PlayerInput))]
+public class PlayerShip : MonoBehaviour
+{
+    [Header("Movement & Bounds")]
+    [SerializeField] private float speed = 10f;
+    [SerializeField] private Border horizontalBounds;
+    [SerializeField] private Border verticalBounds;
+
+    [Header("Combat Settings")]
+    [SerializeField] private GameObject bulletPrefab;
+    [SerializeField] private Transform firePoint;
+    [SerializeField] private float fireRate = 0.2f;
+    [SerializeField] private float bulletSpeed = 15f;
+
+    [Header("Visuals")]
+    public float spriteRotationOffset = -90f;
+
+    private SpriteRenderer _spriteRenderer;
+    private PlayerInput _playerInput;
+    private Camera _mainCam;
+
+    private Vector2 _moveInput;
+    private float _targetAngle;
+    private int _hitCount = 0;
+    private float _nextFireTime;
+    private float _zPosition = -1f;
+
+    private void Awake()
+    {
+        _spriteRenderer = GetComponent<SpriteRenderer>();
+        _playerInput = GetComponent<PlayerInput>();
+        _mainCam = Camera.main;
+    }
+
+    private void Start()
+    {
+        StartCoroutine(ScoreIncrementCoroutine());
+    }
+
+    private void Update()
+    {
+        // Prevent player actions if the game is paused by your PauseManager
+        if (PauseManager.IsGamePaused || Time.timeScale == 0) return;
+
+        HandleInputs();
+        ApplyMovementAndWrapping();
+
+        // Shooting Logic
+        if (_playerInput.actions["Fire"].IsPressed() && Time.time > _nextFireTime)
+        {
+            Fire();
+            _nextFireTime = Time.time + fireRate;
+        }
+    }
+
+    private void HandleInputs()
+    {
+        _moveInput = _playerInput.actions["Move"].ReadValue<Vector2>();
+
+        if (_playerInput.currentControlScheme == "Gamepad")
+        {
+            Vector2 stick = _playerInput.actions["Look"].ReadValue<Vector2>();
+            if (stick.sqrMagnitude > 0.1f)
+                _targetAngle = Mathf.Atan2(stick.y, stick.x) * Mathf.Rad2Deg + spriteRotationOffset;
+        }
+        else
+        {
+            Vector3 mousePos = _mainCam.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+            Vector2 dir = (Vector2)(mousePos - transform.position);
+            _targetAngle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg + spriteRotationOffset;
+        }
+
+        transform.rotation = Quaternion.Euler(0, 0, _targetAngle);
+    }
+
+    private void ApplyMovementAndWrapping()
+    {
+        transform.position += (Vector3)_moveInput * speed * Time.deltaTime;
+
+        Vector3 pos = transform.position;
+        if (pos.x > horizontalBounds.Max) pos.x = horizontalBounds.Min;
+        else if (pos.x < horizontalBounds.Min) pos.x = horizontalBounds.Max;
+
+        if (pos.y > verticalBounds.Max) pos.y = verticalBounds.Max;
+        else if (pos.y < verticalBounds.Min) pos.y = verticalBounds.Min;
+
+        pos.z = _zPosition;
+        transform.position = pos;
+    }
+
+    private void Fire()
+    {
+        if (bulletPrefab == null || firePoint == null) return;
+        GameObject b = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+        b.GetComponent<Rigidbody2D>().linearVelocity = firePoint.up * bulletSpeed;
+
+        if (AudioManager.instance != null)
+        {
+            AudioManager.instance.PlaySFX("Shoot"); 
+        }
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Enemy"))
+        {
+            _hitCount++;
+            if (_hitCount == 1)
+            {
+                _spriteRenderer.color = Color.red;
+
+                if (AudioManager.instance != null) AudioManager.instance.PlaySFX("PlayerHurt");
+            }
+            else if (_hitCount >= 2)
+            {
+                if (AudioManager.instance != null) AudioManager.instance.PlaySFX("PlayerDeath");
+
+                Destroy(gameObject);
+                SceneManager.LoadScene("MainMenu");
+            }
+        }
+    }
+
+    private IEnumerator ScoreIncrementCoroutine()
+    {
+        while (true)
+        {
+            if (_hitCount < 2 && ScoreManager.instance != null)
+            {
+                ScoreManager.instance.AddScore(1);
+            }
+            yield return new WaitForSeconds(1f);
+        }
+    }
+}
