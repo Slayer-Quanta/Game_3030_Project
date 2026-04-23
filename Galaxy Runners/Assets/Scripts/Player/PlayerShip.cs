@@ -14,6 +14,7 @@ public class PlayerShip : MonoBehaviour
 {
     [Header("Movement & Bounds")]
     [SerializeField] private float speed = 10f;
+    [SerializeField] private float rotationSpeed = 250f; 
     [SerializeField] private Border horizontalBounds;
     [SerializeField] private Border verticalBounds;
 
@@ -23,12 +24,8 @@ public class PlayerShip : MonoBehaviour
     [SerializeField] private float fireRate = 0.2f;
     [SerializeField] private float bulletSpeed = 15f;
 
-    [Header("Visuals")]
-    public float spriteRotationOffset = -90f;
-
     private SpriteRenderer _spriteRenderer;
     private PlayerInput _playerInput;
-    private Camera _mainCam;
 
     private Vector2 _moveInput;
     private float _targetAngle;
@@ -40,17 +37,17 @@ public class PlayerShip : MonoBehaviour
     {
         _spriteRenderer = GetComponent<SpriteRenderer>();
         _playerInput = GetComponent<PlayerInput>();
-        _mainCam = Camera.main;
     }
 
     private void Start()
     {
+        _targetAngle = transform.eulerAngles.z;
+
         StartCoroutine(ScoreIncrementCoroutine());
     }
 
     private void Update()
     {
-        // Prevent player actions if the game is paused by your PauseManager
         if (PauseManager.IsGamePaused || Time.timeScale == 0) return;
 
         HandleInputs();
@@ -68,18 +65,11 @@ public class PlayerShip : MonoBehaviour
     {
         _moveInput = _playerInput.actions["Move"].ReadValue<Vector2>();
 
-        if (_playerInput.currentControlScheme == "Gamepad")
-        {
-            Vector2 stick = _playerInput.actions["Look"].ReadValue<Vector2>();
-            if (stick.sqrMagnitude > 0.1f)
-                _targetAngle = Mathf.Atan2(stick.y, stick.x) * Mathf.Rad2Deg + spriteRotationOffset;
-        }
-        else
-        {
-            Vector3 mousePos = _mainCam.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-            Vector2 dir = (Vector2)(mousePos - transform.position);
-            _targetAngle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg + spriteRotationOffset;
-        }
+        float turnLeft = _playerInput.actions["Rotate Left"].ReadValue<float>();
+        float turnRight = _playerInput.actions["Rotate Right"].ReadValue<float>();
+        float turnAmount = turnLeft - turnRight;
+
+        _targetAngle += turnAmount * rotationSpeed * Time.deltaTime;
 
         transform.rotation = Quaternion.Euler(0, 0, _targetAngle);
     }
@@ -107,7 +97,7 @@ public class PlayerShip : MonoBehaviour
 
         if (AudioManager.instance != null)
         {
-            AudioManager.instance.PlaySFX("Shoot"); 
+            AudioManager.instance.PlaySFX("Shoot");
         }
     }
 
@@ -125,6 +115,15 @@ public class PlayerShip : MonoBehaviour
             else if (_hitCount >= 2)
             {
                 if (AudioManager.instance != null) AudioManager.instance.PlaySFX("PlayerDeath");
+
+                if (GameManager.Instance != null && ScoreManager.instance != null)
+                {
+                    string scoreString = ScoreManager.instance.scoreText.text.Replace("Score: ", "");
+                    if (int.TryParse(scoreString, out int finalScore))
+                    {
+                        GameManager.Instance.CheckAndSaveHighScore(finalScore);
+                    }
+                }
 
                 Destroy(gameObject);
                 SceneManager.LoadScene("MainMenu");
